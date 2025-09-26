@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>3D Car Race Game - With Ad Banner</title>
+    
+    <!-- 
+      STEP 1: ADD ADSENSE SCRIPT
+      Replace 'ca-pub-xxxxxxxxxxxxxxxx' with your actual AdSense Publisher ID.
+    -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=pub-1180121660205807"
+     crossorigin="anonymous"></script>
+
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            display:block;
+            color: white;
+            font-family: monospace;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px #000000;
+        }
+        #gameover {
+            position: absolute;
+            top: 45%; /* Adjusted to be above the banner */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 200;
+            display: none;
+            color: red;
+            font-family: monospace;
+            font-size: 60px;
+            text-align: center;
+            text-shadow: 3px 3px 6px #000000;
+        }
+
+        /* --- CSS for the Ad Banner --- */
+        #ad-banner {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50px; /* Standard mobile banner height */
+            background-color: #111; /* Fallback background */
+            z-index: 500; /* Ensure it's on top */
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">Score: 0</div>
+    <div id="gameover">GAME OVER!<br><span style="font-size: 30px;">Refresh to play again</span></div>
+
+    <!-- The game canvas will be added here by Three.js -->
+
+    <!-- --- HTML for the Ad Banner --- -->
+    <div id="ad-banner">
+        <!-- 
+          STEP 2: PLACE YOUR ADSENSE AD UNIT CODE HERE
+          - Replace 'ca-pub-xxxxxxxxxxxxxxxx' with your Publisher ID.
+          - Replace '1234567890' with the Ad Slot ID from AdSense.
+          - A responsive ad unit is recommended.
+        -->
+        <ins class="adsbygoogle"
+             style="display:block; width:320px; height:50px"
+             data-ad-client="pub-1180121660205807"
+             data-ad-slot="ca-app-pub-1180121660205807/5989658112"></ins>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+    <script>
+        // --- Game Constants and Setup ---
+        const BANNER_HEIGHT = 50; // The height of your ad banner in pixels
+        const PLAYER_SPEED = 1.2;
+        const ENEMY_SPEED = 0.8;
+        // ... (rest of your constants)
+        let score = 0;
+        let isGameOver = false;
+        let car = new THREE.Group();
+
+        // --- Scene Setup ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87CEEB);
+        scene.fog = new THREE.Fog(0x87CEEB, 1, 400);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight - BANNER_HEIGHT), 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        
+        // --- STEP 3: RESIZE THE CANVAS TO ACCOUNT FOR THE BANNER ---
+        renderer.setSize(window.innerWidth, window.innerHeight - BANNER_HEIGHT);
+        document.body.insertBefore(renderer.domElement, document.getElementById('ad-banner'));
+        
+        // Initialize the ad
+        (adsbygoogle = window.adsbygoogle || []).push({});
+
+        // --- Lighting, Scenery, Car Models, etc. (Your existing code) ---
+        // (This code remains the same as before)
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        // ... etc ...
+        const loader = new THREE.GLTFLoader();
+        // ... (rest of the loader and game setup code) ...
+        loader.load('assets/audi_r8/scene.gltf', /* ... */ );
+        const enemyCars = []; // populate this as before
+        const points = []; // populate this as before
+        
+        // --- Controls & Logic ---
+        const keys = {};
+        document.addEventListener('keydown', (e) => keys[e.code] = true);
+        document.addEventListener('keyup', (e) => keys[e.code] = false);
+
+        function animate() {
+            if (isGameOver) return;
+
+            requestAnimationFrame(animate);
+
+            // --- Game Logic (movement, camera, AI) ---
+            // (This code remains the same)
+
+            // Collision detection: Enemy cars
+            const carBox = new THREE.Box3().setFromObject(car);
+            for (let i = 0; i < enemyCars.length; i++) {
+                const enemyCar = enemyCars[i];
+                const enemyBox = new THREE.Box3().setFromObject(enemyCar);
+
+                if (carBox.intersectsBox(enemyBox)) {
+                    isGameOver = true;
+                    // We no longer show an ad overlay, just the game over text
+                    document.getElementById('gameover').style.display = 'block';
+                    break;
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+        
+        // --- Handle window resizing (Crucial update) ---
+        window.addEventListener('resize', () => {
+            // Adjust camera aspect ratio for the new viewport size
+            camera.aspect = window.innerWidth / (window.innerHeight - BANNER_HEIGHT);
+            camera.updateProjectionMatrix();
+            
+            // Resize the renderer to fill the area ABOVE the banner
+            renderer.setSize(window.innerWidth, window.innerHeight - BANNER_HEIGHT);
+        }, false);
+
+        // Make sure you have your animate() call triggered after the model loads
+        // (The loader callback logic from the previous version is correct)
+    </script>
+</body>
+</html>
